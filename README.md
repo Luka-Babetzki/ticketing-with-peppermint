@@ -17,6 +17,8 @@ Self-hosted ticketing system deployed via Docker on Ubuntu 22.04 LTS for simulat
 - Docker Compose
 - Peppermint (open-source ticketing platform)
 
+>**Lab Environment:** See my <a href="https://github.com/Luka-Babetzki/IT-home-lab">IT homelab setup documentation<a/> for virtualisation platform and base configuration details.
+
 ## Architecture
 
 - Host: Ubuntu 22.04 LTS VM (`192.168.138.12`)
