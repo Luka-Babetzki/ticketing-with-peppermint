@@ -6,26 +6,25 @@ Self-hosted ticketing system deployed via Docker on Ubuntu 22.04 LTS for simulat
 ## Objectives
 - Deploy Peppermint ticketing system inside a Docker container on Ubuntu
 - Understand ticket assignment, prioritisation, and management workflows
-- Document complete ticket lifecycle from creation to closure
 - Learn to triage tickets based on impact and urgency
-- Practise escalating tickets beyond scope to appropriate technicians
+
+## Prerequisites
+This project requires a baseline VMware environment. Complete the following from the [Home Lab Foundation](https://github.com/Luka-Babetzki/homelab-foundation) repository:
+
+- VMware Workstation Pro installation
+- Download required OS ISOs: Ubuntu 22.04
+- Configure NAT network (VMnet8)
+
+If you haven't set up your foundation environment yet, follow the complete guide [here](https://github.com/Luka-Babetzki/homelab-foundation).
 
 ## Technologies Used
-- VMware Workstation Pro
-- Ubuntu 22.04 LTS
 - Docker Engine
 - Docker Compose
 - Peppermint (open-source ticketing platform)
 
->**Lab Environment:** See my <a href="https://github.com/Luka-Babetzki/IT-home-lab">IT homelab setup documentation<a/> for virtualisation platform and base configuration details.
+## Architecture Design
 
-## Architecture
-
-- Host: Ubuntu 22.04 LTS VM (`192.168.138.12`)
-- Container orchestration: Docker Compose
-- Database: PostgreSQL (containerised)
-- Application: Peppermint web interface (ports 3000, 5003)
-- Network: Bridge network between containers
+![Network Topology Diagram](path/to/diagram.png)
 
 ## Implementation Steps
 
@@ -143,227 +142,81 @@ Successfully logged in and presented with Peppermint dashboard.
 
 ### 4. Configure Users and Clients
 
-<!--
+...
 
-Set up multiple user accounts with different permission levels to simulate multi-tier support structure.
+## What I Learned
+### Docker Container Orchestration:
 
-**Created users:**
-- **Tier 1 Technician** (`tier1@lab.local`) - Basic permissions, can view and update assigned tickets
-- **Tier 2 Technician** (`tier2@lab.local`) - Elevated permissions, can reassign and escalate tickets
-- **Tier 3 Engineer** (`tier3@lab.local`) - Full permissions, handles complex technical issues
-- **Manager** (`manager@lab.local`) - Administrative access, oversees all tickets and generates reports
+**Multi-container dependencies:** Learnt how Docker Compose orchestrates multiple containers with dependencies. The depends_on directive ensured the PostgreSQL database container started before the Peppermint application container, preventing connection failures during startup.
 
-**Configuration steps:**
-1. Navigate to Settings > Users
-2. Click "Add User"
-3. Fill in email, name, and role
-4. Set initial password
-5. Assign appropriate permissions based on tier level
+**Container networking:** Discovered that containers in the same Docker Compose project can communicate using service names as hostnames. The Peppermint container connects to PostgreSQL using DB_HOST: "peppermint_postgres" rather than an IP address, as Docker Compose creates an internal network automatically.
 
-**Created clients:**
-- **Finance Department** - Simulated internal department
-- **HR Department** - Simulated internal department
-- **External Client Co.** - Simulated external customer
+### Security Best Practices:
 
-**Configuration steps:**
-1. Navigate to Settings > Clients
-2. Click "Add Client"
-3. Enter client name and contact details
-4. Save configuration
+**Default credentials vulnerability:** Experienced firsthand why default credentials are a security risk. The system shipped with `admin@admin.com:1234`, which would be trivial for attackers to exploit. Changing these immediately after deployment is essential.
 
-### 5. Simulated Ticket Walkthroughs
-
-Created and worked through five realistic support tickets across different tiers to practise complete ticket lifecycle management.
-
-#### Ticket #1: Password Reset Request (Tier 1)
-
-**Scenario:** User from Finance Department cannot log into workstation after weekend.
-
-**Ticket details:**
-- Priority: Medium
-- Client: Finance Department
-- Assigned to: Tier 1 Technician
-- Issue: "Cannot log into computer, says password is incorrect"
-
-**Resolution steps:**
-1. Verified user identity via email confirmation
-2. Reset Active Directory password (simulated via documentation)
-3. Confirmed user successfully logged in
-4. Documented resolution: "Password reset performed, user authenticated and confirmed access restored"
-5. Closed ticket
-
-**Time to resolution:** 15 minutes  
-**Escalation required:** No
-
-#### Ticket #2: Printer Not Working (Tier 1)
-
-**Scenario:** HR Department printer offline, multiple users affected.
-
-**Ticket details:**
-- Priority: High
-- Client: HR Department
-- Assigned to: Tier 1 Technician
-- Issue: "Printer showing offline, cannot print payroll documents"
-
-**Resolution steps:**
-1. Verified printer power and network connectivity
-2. Checked print queue for stuck jobs
-3. Restarted print spooler service (simulated)
-4. Tested print from technician workstation
-5. Documented resolution: "Print spooler restarted, test page successful, users confirmed printing restored"
-6. Closed ticket
-
-**Time to resolution:** 25 minutes  
-**Escalation required:** No
-
-#### Ticket #3: Email Not Syncing on Mobile Device (Tier 1 → Tier 2)
-
-**Scenario:** Executive's mobile device stopped syncing email overnight.
-
-**Ticket details:**
-- Priority: High (executive user)
-- Client: Finance Department
-- Initially assigned to: Tier 1 Technician
-- Issue: "iPhone not receiving emails since this morning"
-
-**Tier 1 troubleshooting:**
-1. Verified basic connectivity (WiFi/cellular working)
-2. Confirmed email credentials correct
-3. Attempted removing and re-adding account - failed
-4. Checked server status - all services operational
-5. Determined issue beyond basic troubleshooting scope
-
-**Escalation to Tier 2:**
-- Added notes: "Basic troubleshooting completed, account credentials verified, suspect MDM policy conflict"
-- Reassigned ticket to Tier 2 Technician
-
-**Tier 2 resolution:**
-1. Reviewed Mobile Device Management (MDM) policies
-2. Identified recent policy update conflicting with iOS version
-3. Temporarily exempted device from policy
-4. Email sync restored immediately
-5. Documented resolution: "MDM policy conflict identified, device exempted pending policy revision"
-6. Closed ticket
-
-**Time to resolution:** 1 hour 10 minutes  
-**Escalation required:** Yes (Tier 1 → Tier 2)
-
-#### Ticket #4: Application Crashes on Launch (Tier 2 → Tier 3)
-
-**Scenario:** Multiple users reporting custom internal application crashing on startup.
-
-**Ticket details:**
-- Priority: Critical (affects multiple users, business-critical application)
-- Client: External Client Co.
-- Initially assigned to: Tier 2 Technician
-- Issue: "Inventory management system crashes immediately on launch, error code 0xc0000005"
-
-**Tier 2 troubleshooting:**
-1. Verified issue affects 15+ users across multiple departments
-2. Checked recent software updates - none deployed
-3. Reviewed application logs - access violation error
-4. Attempted application repair/reinstall - issue persists
-5. Determined root cause likely code-level or database corruption
-
-**Escalation to Tier 3:**
-- Added notes: "Widespread issue, access violation error, repair/reinstall ineffective, suspect database or recent backend change"
-- Reassigned ticket to Tier 3 Engineer
-
-**Tier 3 resolution:**
-1. Connected to application database server
-2. Identified corrupted index on primary inventory table
-3. Rebuilt database index
-4. Verified application functionality across multiple test accounts
-5. Coordinated with users to confirm resolution
-6. Documented resolution: "Database index corruption identified and repaired, application functionality restored"
-7. Closed ticket
-
-**Time to resolution:** 3 hours 45 minutes  
-**Escalation required:** Yes (Tier 2 → Tier 3)
-
-#### Ticket #5: Network Drive Inaccessible (Tier 2)
-
-**Scenario:** Entire department cannot access shared network drive.
-
-**Ticket details:**
-- Priority: Critical (business operations halted)
-- Client: HR Department
-- Assigned to: Tier 2 Technician
-- Issue: "H: drive not accessible, all HR staff affected, cannot process employee records"
-
-**Resolution steps:**
-1. Verified issue scope - entire HR department (20 users)
-2. Checked file server status - online and responsive
-3. Verified network connectivity from affected segment
-4. Identified security group membership change removed HR department access
-5. Restored security group permissions on shared folder
-6. Verified access restored for all affected users
-7. Documented resolution: "Security group permissions inadvertently modified during routine audit, permissions restored, access confirmed"
-8. Closed ticket
-
-**Time to resolution:** 45 minutes  
-**Escalation required:** No
-
--->
-
-## Key Learnings
-
--
--
--
--
--
-
-## Future Enhancements
-
-- [ ] Add screenshots of Peppermint dashboard and ticket workflows
-- [ ] Integrate email notifications for ticket updates
-- [ ] Configure SLA (Service Level Agreement) timers for priority-based response times
-- [ ] Create knowledge base articles from resolved tickets
-- [ ] Set up ticket templates for common issue types
+### Overall Growth:
+This project bridged the gap between theoretical Docker knowledge and practical deployment. I moved from simply understanding what containers are to actually orchestrating a multi-container application with persistent storage and network communication. The troubleshooting experiences taught me systematic debugging approaches that apply beyond just Docker.
 
 ## Troubleshooting
+### Issue 1: Docker installation fails due to conflicting packages
+**Symptoms:**** Installation errors when attempting to install Docker from the official repository
 
-**Docker installation fails due to conflicting packages:**
+**Cause:** Conflicting unofficial Docker packages from Ubuntu repositories are already installed on the system
 
-Remove all unofficial Docker packages from Ubuntu repositories before installing from official Docker repository:
+**Solution:** Remove all unofficial Docker packages before installing from the official Docker repository:
+
 ```bash
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 ```
-
 Then follow installation steps from Step 1.
 
-**Peppermint container won't start or crashes:**
+### Issue 2: Peppermint container won't start or crashes
+**Symptoms:** Container fails to start or unexpectedly stops running
 
-Check container logs for errors:
+**Cause:** Configuration errors, missing dependencies, or resource constraints
+
+**Solution:** Check container logs for specific errors:
+
 ```bash
 sudo docker logs peppermint
 ```
-
-Restart containers:
+Restart the containers:
 ```bash
 sudo docker-compose down
 sudo docker-compose up -d
 ```
 
-**Cannot access Peppermint web interface:**
+### Issue 3: Cannot access Peppermint web interface
+**Symptoms:** Unable to reach the Peppermint interface via web browser
 
-Verify containers are running:
+**Cause:** Containers not running, firewall blocking port 3000, or incorrect IP address
+
+**Solution:**
+
+1. Verify containers are running:
 ```bash
 sudo docker ps
 ```
-
-Check Ubuntu firewall isn't blocking port 3000:
+2. Check Ubuntu firewall isn't blocking port 3000:
 ```bash
 sudo ufw status
 sudo ufw allow 3000/tcp
 ```
+3. Verify you're accessing the correct IP address (192.168.138.12:3000 in this lab)
 
-Verify you're accessing correct IP address (`192.168.138.12:3000` in this lab).
+## How Can It Be Improved?
 
-## Resources
+- Configure SLA (Service Level Agreement) timers for priority-based response times
+- Create knowledge base articles from resolved tickets
+- Set up ticket templates for common issue types
+
+## Additional Resources
 
 - [Peppermint Official Documentation](https://docs.peppermint.sh/)
 - [Docker Installation Guide for Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [Peppermint GitHub Repository](https://github.com/Peppermint-Lab/peppermint)
+
+## 📹 Demonstration
+![Embedded Video](path/to/Video.mp4)
